@@ -28,3 +28,17 @@ export const selectPagination = createSelector(
   selectTasksState,
   (tasks) => tasks.pagination
 );
+
+// 4. Task selection selectors
+export const selectSelectedTaskId = (state: RootState) => state.taskView.selectedTaskId;
+
+export const selectSelectedTask = createSelector(
+  selectTaskEntities,
+  selectSelectedTaskId,
+  (entities, id) => (id ? entities[id] || null : null)
+);
+
+export const selectSelectedTaskExists = createSelector(
+  selectSelectedTask,
+  (task) => task !== null
+);

@@ -1,12 +1,15 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { useAppDispatch } from '@/store/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { fetchTasksPage } from '@/store/tasksSlice';
+import { selectSelectedTaskExists } from '@/store/selectors';
 import { TaskList } from './task-list/TaskList';
+import { TaskDetailsPanel } from './task-details/TaskDetailsPanel';
 
 export default function ActivityConsole() {
   const dispatch = useAppDispatch();
+  const selectedTaskExists = useAppSelector(selectSelectedTaskExists);
 
   // On mount, trigger the fetch for the first page of tasks
   useEffect(() => {
@@ -15,7 +18,7 @@ export default function ActivityConsole() {
 
   return (
     <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 flex flex-col">
-      <header className="mb-8 flex flex-col gap-1">
+      <header className="mb-6 flex flex-col gap-1 select-none">
         <h1 className="text-2xl font-extrabold text-zinc-900 tracking-tight">
           Annotation Activity Console
         </h1>
@@ -24,8 +27,18 @@ export default function ActivityConsole() {
         </p>
       </header>
       
-      <main className="flex-1">
-        <TaskList />
+      <main className="flex-1 flex flex-col lg:flex-row gap-6 items-start">
+        {/* Left Side: Task List */}
+        <div className="flex-1 w-full">
+          <TaskList />
+        </div>
+        
+        {/* Right Side: Detail Panel */}
+        {selectedTaskExists && (
+          <aside className="w-full lg:w-[380px] shrink-0 lg:sticky lg:top-6 self-stretch lg:self-start max-h-[calc(100vh-8rem)]">
+            <TaskDetailsPanel />
+          </aside>
+        )}
       </main>
     </div>
   );
