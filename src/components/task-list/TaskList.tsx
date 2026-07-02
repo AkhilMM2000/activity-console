@@ -11,6 +11,7 @@ import { EmptyState } from '../ui/EmptyState';
 export function TaskList() {
   const dispatch = useAppDispatch();
   const tasks = useAppSelector(selectAllTasks);
+  console.log(tasks,'task loadded')
   const status = useAppSelector(selectTasksStatus);
   const error = useAppSelector(selectTasksError);
   const pagination = useAppSelector(selectPagination);

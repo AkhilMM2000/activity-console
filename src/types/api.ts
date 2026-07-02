@@ -6,17 +6,21 @@ export interface RawUser {
 export interface RawTask {
   id: string;
   title: string;
-  type: string;                  // e.g. "image", "audio", "text", "video"
-  status: string;                // e.g. "in_progress", "todo", "done", "qa", "blocked"
+  type: string;                  // e.g. "image", "audio", "text"
+  status: string;                // e.g. "InProgress", "done", "QA", "BLOCKED"
   assignee: RawUser | null;
-  annotationCount: number | string; // Messy payloads might contain strings or numbers
-  updatedAt: string | number;      // Dates could be ISO strings or Unix millisecond timestamps
-  priority?: string;               // e.g. "low", "medium", "high"
-  note?: string;                   // optional reviewer comments
+  annotationCount: number | string;
+  updatedAt: string | number;
+  meta?: {
+    priority?: string;           // nested inside meta
+    note?: string;               // nested inside meta
+  };
+  priority?: string;             // fallback at root
+  note?: string;                 // fallback at root
 }
 
 export interface GetTasksResponse {
-  tasks: RawTask[];
+  items: RawTask[];              // Changed from 'tasks' to 'items'
   total: number;
   page: number;
   pageSize: number;

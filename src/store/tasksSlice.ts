@@ -3,11 +3,7 @@ import { NormalizedTask } from '@/types/domain';
 import { fetchTasks } from '@/services/taskApi';
 import { normalizeTask } from '@/domain/normalize';
 
-// Define the entity adapter for normalized task models
-export const tasksAdapter = createEntityAdapter<NormalizedTask>({
-  selectId: (task) => task.id,
-  // Default sorting can be handled here or inside memoized selectors
-});
+export const tasksAdapter = createEntityAdapter<NormalizedTask>();
 
 // Async thunk to fetch page data and normalize raw models
 export const fetchTasksPage = createAsyncThunk(
@@ -16,7 +12,7 @@ export const fetchTasksPage = createAsyncThunk(
     try {
       const response = await fetchTasks(page);
       
-      const normalizedTasks = response.tasks.map(normalizeTask);
+      const normalizedTasks = response.items.map(normalizeTask);
       
       return {
         tasks: normalizedTasks,

@@ -89,14 +89,17 @@ export function normalizeDate(rawDate: any): string {
  * Converts a raw untrusted task payload into a normalized, strictly typed NormalizedTask model.
  */
 export function normalizeTask(raw: RawTask): NormalizedTask {
-  // Normalize priority to low, medium, or high
+  // Normalize priority to low, medium, or high (check meta object first)
   let priority: 'low' | 'medium' | 'high' = 'medium';
-  if (raw.priority) {
-    const p = raw.priority.toLowerCase().trim();
+  const rawPriority = raw.meta?.priority || raw.priority;
+  if (rawPriority) {
+    const p = rawPriority.toLowerCase().trim();
     if (p === 'low' || p === 'medium' || p === 'high') {
       priority = p;
     }
   }
+
+  const note = raw.meta?.note || raw.note;
 
   return {
     id: raw.id || `temp-${Math.random().toString(36).substr(2, 9)}`,
@@ -114,6 +117,6 @@ export function normalizeTask(raw: RawTask): NormalizedTask {
     annotationCount: normalizeAnnotationCount(raw.annotationCount),
     updatedAt: normalizeDate(raw.updatedAt),
     priority,
-    note: raw.note || undefined,
+    note: note || undefined,
   };
 }

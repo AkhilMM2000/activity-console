@@ -12,6 +12,6 @@ export async function fetchTasks(page: number, pageSize: number = 20): Promise<G
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
   }
-  
+
   return response.json();
 }
