@@ -13,7 +13,7 @@ export const fetchTasksPage = createAsyncThunk(
       const response = await fetchTasks(page);
       
       const normalizedTasks = response.items.map(normalizeTask);
-      
+
       return {
         tasks: normalizedTasks,
         total: response.total,

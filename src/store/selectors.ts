@@ -9,6 +9,7 @@ export const selectTasksState = (state: RootState) => state.tasks;
 const adapterSelectors = tasksAdapter.getSelectors(selectTasksState);
 
 export const selectAllTasks = adapterSelectors.selectAll;
+
 export const selectTaskEntities = adapterSelectors.selectEntities;
 export const selectTaskIds = adapterSelectors.selectIds;
 

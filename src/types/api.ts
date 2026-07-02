@@ -20,7 +20,7 @@ export interface RawTask {
 }
 
 export interface GetTasksResponse {
-  items: RawTask[];              // Changed from 'tasks' to 'items'
+  items: RawTask[];              
   total: number;
   page: number;
   pageSize: number;
