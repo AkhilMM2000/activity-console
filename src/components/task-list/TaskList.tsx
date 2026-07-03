@@ -1,8 +1,15 @@
 import React from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { selectAllTasks, selectTasksStatus, selectTasksError, selectPagination } from '@/store/selectors';
+import {
+  selectFilteredAndSortedTasks,
+  selectTasksStatus,
+  selectTasksError,
+  selectPagination,
+  selectHasActiveFilters,
+} from '@/store/selectors';
 import { selectTaskId } from '@/store/taskViewSlice';
 import { fetchTasksPage } from '@/store/tasksSlice';
+import { resetFilters } from '@/store/toolbarSlice';
 import { TaskRow } from './TaskRow';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 import { ErrorState } from '../ui/ErrorState';
@@ -10,7 +17,8 @@ import { EmptyState } from '../ui/EmptyState';
 
 export function TaskList() {
   const dispatch = useAppDispatch();
-  const tasks = useAppSelector(selectAllTasks);
+  const tasks = useAppSelector(selectFilteredAndSortedTasks);
+  const hasActiveFilters = useAppSelector(selectHasActiveFilters);
 
   const status = useAppSelector(selectTasksStatus);
   const error = useAppSelector(selectTasksError);
@@ -46,6 +54,17 @@ export function TaskList() {
 
   // 3. Empty state
   if (status === 'succeeded' && tasks.length === 0) {
+    if (hasActiveFilters) {
+      return (
+        <div className="py-12">
+          <EmptyState
+            title="No matching tasks"
+            message="No tasks match the active search query or filter selections."
+            onClearFilters={() => dispatch(resetFilters())}
+          />
+        </div>
+      );
+    }
     return (
       <div className="py-12">
         <EmptyState message="No tasks are currently available in the queue." />
