@@ -2,17 +2,27 @@ import { createSlice, createAsyncThunk, createEntityAdapter, PayloadAction } fro
 import { NormalizedTask } from '@/types/domain';
 import { fetchTasks } from '@/services/taskApi';
 import { normalizeTask, normalizeStatus, normalizeDate } from '@/domain/normalize';
+import { getCachedTasksPage, setCachedTasksPage } from '@/services/cache';
 
 export const tasksAdapter = createEntityAdapter<NormalizedTask>();
 
 // Async thunk to fetch page data and normalize raw models
 export const fetchTasksPage = createAsyncThunk(
   'tasks/fetchPage',
-  async (page: number, { rejectWithValue }) => {
+  async (page: number, { dispatch, rejectWithValue }) => {
     try {
+      // 1. Try retrieving tasks from IndexedDB cache (TTL validated)
+      const cached = await getCachedTasksPage(page);
+      if (cached) {
+        dispatch(tasksHydrated({ tasks: cached.tasks, total: cached.total, page }));
+      }
+
+      // 2. Fetch fresh tasks from API
       const response = await fetchTasks(page);
-      
       const normalizedTasks = response.items.map(normalizeTask);
+
+      // 3. Write fresh page data back to IndexedDB cache
+      await setCachedTasksPage(page, { tasks: normalizedTasks, total: response.total });
 
       return {
         tasks: normalizedTasks,
@@ -38,6 +48,19 @@ const tasksSlice = createSlice({
     },
   }),
   reducers: {
+    tasksHydrated(
+      state,
+      action: PayloadAction<{ tasks: NormalizedTask[]; total: number; page: number }>
+    ) {
+      const { tasks, total, page } = action.payload;
+      // Do not overwrite with stale cache if network response already resolved
+      if (state.status === 'succeeded' && state.pagination.page === page) {
+        return;
+      }
+      tasksAdapter.setAll(state, tasks);
+      state.pagination.page = page;
+      state.pagination.total = total;
+    },
     taskUpdated(
       state,
       action: PayloadAction<{ id: string; status: string; updatedAt: number | string }>
@@ -86,9 +109,13 @@ const tasksSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchTasksPage.pending, (state) => {
+      .addCase(fetchTasksPage.pending, (state, action) => {
         state.status = 'loading';
         state.error = null;
+        // Clear list only when switching to a different page to prevent layout flashes
+        if (state.pagination.page !== action.meta.arg) {
+          tasksAdapter.removeAll(state);
+        }
       })
       .addCase(fetchTasksPage.fulfilled, (state, action) => {
         state.status = 'succeeded';
@@ -104,5 +131,5 @@ const tasksSlice = createSlice({
   },
 });
 
-export const { taskUpdated, taskAssigned, annotationCreated } = tasksSlice.actions;
+export const { tasksHydrated, taskUpdated, taskAssigned, annotationCreated } = tasksSlice.actions;
 export default tasksSlice.reducer;

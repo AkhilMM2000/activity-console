@@ -88,6 +88,23 @@ export function TaskList() {
 
   return (
     <div className="relative overflow-hidden bg-white border border-zinc-150 rounded-2xl shadow-sm">
+      {/* Offline Mode Warning Banner */}
+      {status === 'failed' && tasks.length > 0 && (
+        <div className="bg-amber-50 border-b border-amber-155 px-6 py-2.5 flex items-center justify-between gap-4 text-xs font-semibold text-amber-800 select-none animate-[fadeIn_0.2s_ease-out]">
+          <div className="flex items-center gap-2">
+            <span className="text-sm">⚠️</span>
+            <span>Connection lost. Showing cached tasks from last session.</span>
+          </div>
+          <button
+            onClick={handleRetry}
+            type="button"
+            className="rounded-lg bg-amber-600/10 px-2.5 py-1 text-amber-800 hover:bg-amber-650/20 active:bg-amber-600/30 transition text-[10px] font-bold"
+          >
+            Retry Connection
+          </button>
+        </div>
+      )}
+
       <div className="overflow-x-auto">
         <table className="w-full text-left table-fixed min-w-[700px]">
           <thead>
