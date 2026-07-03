@@ -3,6 +3,7 @@ import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { selectSelectedTask } from '@/store/selectors';
 import { selectTaskId } from '@/store/taskViewSlice';
 import { TaskMetadata } from './TaskMetadata';
+import { SummaryPanel } from './SummaryPanel';
 
 export function TaskDetailsPanel() {
   const dispatch = useAppDispatch();
@@ -60,16 +61,9 @@ export function TaskDetailsPanel() {
       <div className="flex-1 overflow-y-auto p-5 space-y-6">
         <TaskMetadata task={task} />
 
-        {/* Placeholder for AI Summary Stream */}
+        {/* AI Summary Stream */}
         <div className="border-t border-zinc-100 pt-6">
-          <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3 select-none">
-            AI task Summary
-          </h3>
-          <div className="rounded-xl border border-zinc-100 bg-zinc-50/50 p-4 border-dashed text-center">
-            <span className="text-xs text-zinc-400 italic font-medium">
-              AI Summary stream will be connected here in a later milestone.
-            </span>
-          </div>
+          <SummaryPanel taskId={task.id} />
         </div>
       </div>
     </div>
