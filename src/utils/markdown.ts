@@ -10,7 +10,7 @@ export function renderMarkdown(markdown: string): string {
 
   // 2. Sanitize using DOMPurify
   if (typeof window === 'undefined') {
-    return rawHtml; // Server-side rendering safe fallback
+    return ''; // Secure server-side rendering fallback (prevents unsanitized HTML leakage)
   }
   return DOMPurify.sanitize(rawHtml);
 }
