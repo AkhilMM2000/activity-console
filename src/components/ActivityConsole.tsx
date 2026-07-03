@@ -7,10 +7,14 @@ import { selectSelectedTaskExists } from '@/store/selectors';
 import { TaskList } from './task-list/TaskList';
 import { TaskDetailsPanel } from './task-details/TaskDetailsPanel';
 import { Toolbar } from './toolbar/Toolbar';
+import { useWebSocket } from '@/hooks/useWebSocket';
 
 export default function ActivityConsole() {
   const dispatch = useAppDispatch();
   const selectedTaskExists = useAppSelector(selectSelectedTaskExists);
+
+  // Initialize real-time WebSocket connection
+  useWebSocket();
 
   // On mount, trigger the fetch for the first page of tasks
   useEffect(() => {

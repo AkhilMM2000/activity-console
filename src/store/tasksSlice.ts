@@ -1,7 +1,7 @@
-import { createSlice, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, createEntityAdapter, PayloadAction } from '@reduxjs/toolkit';
 import { NormalizedTask } from '@/types/domain';
 import { fetchTasks } from '@/services/taskApi';
-import { normalizeTask } from '@/domain/normalize';
+import { normalizeTask, normalizeStatus, normalizeDate } from '@/domain/normalize';
 
 export const tasksAdapter = createEntityAdapter<NormalizedTask>();
 
@@ -37,7 +37,53 @@ const tasksSlice = createSlice({
       total: 0,
     },
   }),
-  reducers: {},
+  reducers: {
+    taskUpdated(
+      state,
+      action: PayloadAction<{ id: string; status: string; updatedAt: number | string }>
+    ) {
+      const { id, status, updatedAt } = action.payload;
+      const existing = state.entities[id];
+      if (existing) {
+        tasksAdapter.updateOne(state, {
+          id,
+          changes: {
+            status: normalizeStatus(status),
+            updatedAt: normalizeDate(updatedAt),
+          },
+        });
+      }
+    },
+    taskAssigned(
+      state,
+      action: PayloadAction<{ id: string; assignee: { id: string; name: string } | null }>
+    ) {
+      const { id, assignee } = action.payload;
+      const existing = state.entities[id];
+      if (existing) {
+        tasksAdapter.updateOne(state, {
+          id,
+          changes: {
+            assignee: assignee
+              ? { id: assignee.id || 'unknown', name: assignee.name || 'Unknown Assignee' }
+              : null,
+          },
+        });
+      }
+    },
+    annotationCreated(state, action: PayloadAction<{ taskId: string }>) {
+      const { taskId } = action.payload;
+      const existing = state.entities[taskId];
+      if (existing) {
+        tasksAdapter.updateOne(state, {
+          id: taskId,
+          changes: {
+            annotationCount: existing.annotationCount + 1,
+          },
+        });
+      }
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchTasksPage.pending, (state) => {
@@ -58,4 +104,5 @@ const tasksSlice = createSlice({
   },
 });
 
+export const { taskUpdated, taskAssigned, annotationCreated } = tasksSlice.actions;
 export default tasksSlice.reducer;

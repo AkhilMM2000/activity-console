@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { NormalizedTask } from '@/types/domain';
 import { TaskType, TaskStatus } from '@/domain/constants';
 
@@ -11,7 +11,34 @@ interface TaskRowProps {
 export function TaskRow({ task, isSelected, onSelect }: TaskRowProps) {
   const { id, title, type, status, assignee, annotationCount, updatedAt } = task;
 
-  // 1. Status badge styles
+  // 1. Flash effect states
+  const [flashCount, setFlashCount] = useState(false);
+  const [flashStatus, setFlashStatus] = useState(false);
+
+  const prevCountRef = useRef(annotationCount);
+  const prevStatusRef = useRef(status);
+
+  // Trigger brief highlight on annotation count updates
+  useEffect(() => {
+    if (annotationCount !== prevCountRef.current) {
+      setFlashCount(true);
+      const timer = setTimeout(() => setFlashCount(false), 800);
+      prevCountRef.current = annotationCount;
+      return () => clearTimeout(timer);
+    }
+  }, [annotationCount]);
+
+  // Trigger brief highlight on status changes
+  useEffect(() => {
+    if (status !== prevStatusRef.current) {
+      setFlashStatus(true);
+      const timer = setTimeout(() => setFlashStatus(false), 800);
+      prevStatusRef.current = status;
+      return () => clearTimeout(timer);
+    }
+  }, [status]);
+
+  // Status badge styles
   const statusStyles: Record<TaskStatus, { bg: string; text: string; dot: string; label: string }> = {
     [TaskStatus.Todo]: { bg: 'bg-zinc-100', text: 'text-zinc-700', dot: 'bg-zinc-400', label: 'Todo' },
     [TaskStatus.InProgress]: { bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-500', label: 'In Progress' },
@@ -21,7 +48,7 @@ export function TaskRow({ task, isSelected, onSelect }: TaskRowProps) {
   };
   const statusStyle = statusStyles[status] || statusStyles[TaskStatus.Todo];
 
-  // 2. Type badge styles
+  // Type badge styles
   const typeStyles: Record<TaskType, { bg: string; text: string; icon: string }> = {
     [TaskType.Image]: { bg: 'bg-cyan-50', text: 'text-cyan-700', icon: '🖼️' },
     [TaskType.Audio]: { bg: 'bg-emerald-50', text: 'text-emerald-700', icon: '🎵' },
@@ -64,7 +91,9 @@ export function TaskRow({ task, isSelected, onSelect }: TaskRowProps) {
 
       {/* 4. Status */}
       <td className="px-6 py-4.5 whitespace-nowrap">
-        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusStyle.bg} ${statusStyle.text}`}>
+        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold transition-all duration-300 ${
+          flashStatus ? 'ring-2 ring-indigo-500/30 scale-105 shadow-sm' : ''
+        } ${statusStyle.bg} ${statusStyle.text}`}>
           <span className={`h-1.5 w-1.5 rounded-full ${statusStyle.dot}`} />
           {statusStyle.label}
         </span>
@@ -85,12 +114,16 @@ export function TaskRow({ task, isSelected, onSelect }: TaskRowProps) {
       </td>
 
       {/* 6. Annotation Count */}
-      <td className="px-6 py-4.5 whitespace-nowrap text-center text-sm font-mono font-semibold text-zinc-700">
-        {annotationCount}
+      <td className="px-6 py-4.5 whitespace-nowrap text-center text-sm font-mono font-semibold">
+        <span className={`inline-block px-1.5 py-0.5 rounded transition-all duration-300 ${
+          flashCount ? 'bg-indigo-100 text-indigo-700 font-bold scale-110 shadow-sm' : 'text-zinc-700'
+        }`}>
+          {annotationCount}
+        </span>
       </td>
 
       {/* 7. Last Updated */}
-      <td className="px-6 py-4.5 whitespace-nowrap text-right text-xs font-mono text-zinc-400">
+      <td className="px-6 py-4.5 whitespace-nowrap text-right text-xs font-mono text-zinc-450">
         {formattedDate}
       </td>
     </tr>
