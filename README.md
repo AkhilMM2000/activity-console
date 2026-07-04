@@ -64,17 +64,6 @@ Once both are running, open:
 ```
 http://localhost:3000
 ```
-
----
-
-## Running Tests
-
-Run the front-end unit/integration tests:
-
-```bash
-npm test
-```
-
 ---
 
 ## Project Structure
