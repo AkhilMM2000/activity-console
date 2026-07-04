@@ -118,12 +118,13 @@ Below are the key architectural choices made during the development of this cons
 
 ### 7. Messy Data & Edge Cases: What We Handled vs. Deliberately Ignored
 * **What We Handled:**
-  1. **Status Key Inconsistencies:** Normalized inconsistent casing (e.g. `InProgress`, `in_progress`, `IN_PROGRESS`) into a clean, unified enum value (`in-progress`).
-  2. **Type-coerced Counts:** Handled annotation counts delivered as strings (`"14"`) or nested structures, converting them to clean, positive integers (defaulting to `0`).
-  3. **Multi-format Timestamps:** Handled dates supplied either as ISO string representations or numeric epoch values, parsing both into standard ISO timestamp format.
-  4. **Partial Assignee Data:** Managed missing assignee IDs or name details, falling back cleanly to `null` or placeholder strings like `"Unknown Assignee"`.
+  1. **Status Inconsistencies:** Normalized different status formats (e.g., InProgress, in_progress, progress) into a consistent TaskStatus enum used throughout the application.
+  2. **Type Normalization:** Converted annotation counts received as either numbers or numeric strings into a consistent integer value, defaulting to 0 when the value was missing or invalid.
+  3. **Date Normalization:** Accepted both ISO date strings and Unix timestamps from the API and converted them into a standard ISO 8601 format.
+  4. **Optional & Nested Fields:** Safely handled optional fields such as meta.priority, meta.note, and assignee, providing sensible defaults when values were missing or incomplete.
 * **What We Deliberately Didn't Handle:**
-  1. **Malformed Payloads:** If an incoming task payload does not contain a primary identifier (`id`), we discard it completely during normalization rather than attempting to reconstruct or assign synthetic IDs.
-  2. **Automated Offline Sync Queues:** We did not implement an offline task mutation sync queue (e.g. queueing annotation clicks while offline to dispatch when online). Instead, we expose a manual **Retry Connection** option to prevent unexpected network retries.
-  3. **Custom HTML Payload Rendering:** In the streamed AI task summary, we do not support rendering untrusted script nodes or custom browser extensions. These are strictly stripped by DOMPurify to prevent XSS exploits.
+  1. **Invalid Task Payloads:** The application assumes every valid task has a unique id. Payloads without a valid identifier are treated as invalid and are not processed further.
+  2. **Offline Write Synchronization:** I did not implement an offline mutation queue (e.g., synchronizing user actions after reconnecting). The application is read-optimized, and users can manually retry failed operations.
+  3. **Unsafe HTML Rendering:** AI summaries may contain untrusted HTML. All generated HTML is sanitized using DOMPurify before rendering, and scripts or dangerous attributes are intentionally removed rather than supported.
+
 
