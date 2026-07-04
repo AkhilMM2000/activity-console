@@ -111,7 +111,19 @@ Below are the key architectural choices made during the development of this cons
   1. **Schema Versioning:** Defined `CACHE_VERSION = 1`. If the database format changes, old schemas are purged immediately on startup to prevent type crashes.
   2. **Cache Time-To-Live (TTL):** Applied a **1-hour TTL** (`cachedAt`). Any cache older than 1 hour is skipped, forcing a fresh load.
   3. **Page Isolation:** Cached items are stored using page keys (e.g. `tasks_page_1`), ensuring transitions to Page 2 don't load Page 1's cached results.
-* **Tradeoffs:**
   * *Con:* Requires handling background async states and displaying revalidation indicators (like progress shimmers) to denote sync statuses.
   * *Pro:* Zero-latency loading states, offline resilience (displays cached rows with a warning banner rather than a blank error page if connections fail), and guaranteed data freshness.
+
+---
+
+### 7. Messy Data & Edge Cases: What We Handled vs. Deliberately Ignored
+* **What We Handled:**
+  1. **Status Key Inconsistencies:** Normalized inconsistent casing (e.g. `InProgress`, `in_progress`, `IN_PROGRESS`) into a clean, unified enum value (`in-progress`).
+  2. **Type-coerced Counts:** Handled annotation counts delivered as strings (`"14"`) or nested structures, converting them to clean, positive integers (defaulting to `0`).
+  3. **Multi-format Timestamps:** Handled dates supplied either as ISO string representations or numeric epoch values, parsing both into standard ISO timestamp format.
+  4. **Partial Assignee Data:** Managed missing assignee IDs or name details, falling back cleanly to `null` or placeholder strings like `"Unknown Assignee"`.
+* **What We Deliberately Didn't Handle:**
+  1. **Malformed Payloads:** If an incoming task payload does not contain a primary identifier (`id`), we discard it completely during normalization rather than attempting to reconstruct or assign synthetic IDs.
+  2. **Automated Offline Sync Queues:** We did not implement an offline task mutation sync queue (e.g. queueing annotation clicks while offline to dispatch when online). Instead, we expose a manual **Retry Connection** option to prevent unexpected network retries.
+  3. **Custom HTML Payload Rendering:** In the streamed AI task summary, we do not support rendering untrusted script nodes or custom browser extensions. These are strictly stripped by DOMPurify to prevent XSS exploits.
 
