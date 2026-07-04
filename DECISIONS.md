@@ -94,3 +94,12 @@ Below are the key architectural choices made during the development of this cons
   * *Con:* We do not support live-adding brand new tasks to the list via WebSockets; the user must click "Next" or refresh to load new items.
   * *Pro:* Ensures perfect mathematical consistency of paginated ranges, and prevents layout shifts or duplicated rows on screen.
 
+---
+
+### 5. Safe Streamed Markdown Rendering & Sanitization (XSS Prevention)
+* **Decision:** We implemented a strict security sequence: **`Raw Markdown Stream` $\rightarrow$ `marked.parse` (HTML conversion) $\rightarrow$ `DOMPurify.sanitize` (Sanitization) $\rightarrow$ `dangerouslySetInnerHTML`**.
+* **Rationale:** The mock server streams untrusted markdown summaries containing raw HTML injections and script payloads (e.g., `<script>alert('xss')</script>` or `<img src=x onerror="...">`). Sanitization **must** happen after the markdown parser converts MD syntax to HTML so that DOMPurify can analyze the full DOM structure and strip malicious scripts or event attributes.
+* **Tradeoffs:**
+  * *Con:* We must parse and sanitize the entire accumulated buffer on every new chunk arrival, which adds minor client CPU overhead.
+  * *Pro:* Total protection against Cross-Site Scripting (XSS) attacks. Additionally, we safeguard Next.js Server-Side Rendering (SSR) by returning an empty string if the parser is invoked on the server (where DOMPurify window context is missing), ensuring zero raw tag leakage.
+
