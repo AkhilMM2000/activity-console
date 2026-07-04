@@ -103,3 +103,15 @@ Below are the key architectural choices made during the development of this cons
   * *Con:* We must parse and sanitize the entire accumulated buffer on every new chunk arrival, which adds minor client CPU overhead.
   * *Pro:* Total protection against Cross-Site Scripting (XSS) attacks. Additionally, we safeguard Next.js Server-Side Rendering (SSR) by returning an empty string if the parser is invoked on the server (where DOMPurify window context is missing), ensuring zero raw tag leakage.
 
+---
+
+### 6. IndexedDB Caching (Stale-While-Revalidate) & Cache Expiration
+* **Decision:** We implemented a page-isolated, versioned **Stale-While-Revalidate (SWR)** caching layer using IndexedDB (via `localforage`).
+* **Rationale:** To keep initial page loads instantaneous and support offline fallbacks, we first hydrate the Redux store with cached tasks before firing a background network request. We prevent stale data bugs using three methods:
+  1. **Schema Versioning:** Defined `CACHE_VERSION = 1`. If the database format changes, old schemas are purged immediately on startup to prevent type crashes.
+  2. **Cache Time-To-Live (TTL):** Applied a **1-hour TTL** (`cachedAt`). Any cache older than 1 hour is skipped, forcing a fresh load.
+  3. **Page Isolation:** Cached items are stored using page keys (e.g. `tasks_page_1`), ensuring transitions to Page 2 don't load Page 1's cached results.
+* **Tradeoffs:**
+  * *Con:* Requires handling background async states and displaying revalidation indicators (like progress shimmers) to denote sync statuses.
+  * *Pro:* Zero-latency loading states, offline resilience (displays cached rows with a warning banner rather than a blank error page if connections fail), and guaranteed data freshness.
+
