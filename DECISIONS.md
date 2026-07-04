@@ -127,4 +127,20 @@ Below are the key architectural choices made during the development of this cons
   2. **Offline Write Synchronization:** I did not implement an offline mutation queue (e.g., synchronizing user actions after reconnecting). The application is read-optimized, and users can manually retry failed operations.
   3. **Unsafe HTML Rendering:** AI summaries may contain untrusted HTML. All generated HTML is sanitized using DOMPurify before rendering, and scripts or dangerous attributes are intentionally removed rather than supported.
 
+---
+
+## Part 4: Next Steps & Future Improvements (With More Time)
+
+If given more time, we would implement the following production-grade enhancements:
+
+1. **Virtualized List Rendering:**
+   * *What/Why:* If the page size increases (e.g., to 100+ tasks per page), DOM overhead can degrade scrolling performance. We would implement list virtualization (using `@tanstack/react-virtual` or `react-window`) to render only the rows currently visible within the viewport.
+2. **Offline Local Write-Queue (Sync):**
+   * *What/Why:* Implement a background sync queue in IndexedDB. If a user performs actions (like annotating or assigning a task) while offline, the changes are stored in a transaction queue and automatically dispatched back to the server once the browser triggers an `'online'` event.
+3. **IndexedDB-WebSocket Sync Integration:**
+   * *What/Why:* Currently, WebSocket updates modify active Redux state in memory. We would extend this to update the IndexedDB cache in the background, ensuring that even if the user restarts their browser, the offline cache is fully synchronized with the latest WebSocket events.
+4. **Full Test Coverage (E2E & Integration):**
+   * *What/Why:* Set up E2E tests using **Playwright** to test pagination, streaming markdown rendering, and WebSocket drop reconnection logic under high-latency network simulations.
+
+
 
