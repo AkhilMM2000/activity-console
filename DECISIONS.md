@@ -142,5 +142,15 @@ If given more time, we would implement the following production-grade enhancemen
 4. **Full Test Coverage (E2E & Integration):**
    * *What/Why:* Set up E2E tests using **Playwright** to test pagination, streaming markdown rendering, and WebSocket drop reconnection logic under high-latency network simulations.
 
+---
+
+## Part 5: AI Usage & Verification
+
+* **How AI was utilized:**
+  I used AI primarily as a learning and review tool throughout the project. It helped me understand architectural concepts, compare implementation approaches, review my code, and improve documentation. I did not rely on AI output without validation.
+* **How implementations were verified:**
+  To verify AI-generated suggestions, I reviewed the official Redux Toolkit, React, and Next.js documentation where appropriate, tested every implementation in the running application, and ensured I could explain each architectural decision and code change in my own words before including it in the project.
+
+
 
 
